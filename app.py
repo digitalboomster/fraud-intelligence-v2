@@ -27,8 +27,9 @@ CSS = """
 .stApp {
     background: #06080d;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #cbd5e1;
+    color: #ffffff;
 }
+.stApp p, .stApp span, .stApp li, .stApp .stMarkdown { color: #ffffff !important; }
 
 #MainMenu, footer, header { visibility: hidden; }
 
@@ -50,7 +51,7 @@ CSS = """
 .sysbar-logo {
     font-size: 0.78rem;
     font-weight: 700;
-    color: #f1f5f9;
+    color: #ffffff;
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
@@ -58,7 +59,7 @@ CSS = """
 .sysbar-module {
     font-size: 0.72rem;
     font-weight: 400;
-    color: #334155;
+    color: #94a3b8;
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
@@ -82,7 +83,7 @@ CSS = """
 @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.25; } }
 .sysbar-tag {
     font-size: 0.62rem;
-    color: #1e2a3d;
+    color: #64748b;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     font-weight: 500;
@@ -92,14 +93,14 @@ CSS = """
 .page-title {
     font-size: 1.65rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: #ffffff;
     letter-spacing: -0.03em;
     line-height: 1.15;
     margin-bottom: 0.35rem;
 }
 .page-sub {
     font-size: 0.825rem;
-    color: #475569;
+    color: #e2e8f0;
     font-weight: 400;
     line-height: 1.5;
     margin-bottom: 2rem;
@@ -135,7 +136,7 @@ CSS = """
 .kpi-label {
     font-size: 0.65rem;
     font-weight: 600;
-    color: #334155;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 0.6rem;
@@ -143,7 +144,7 @@ CSS = """
 .kpi-val {
     font-size: 1.9rem;
     font-weight: 700;
-    color: #f1f5f9;
+    color: #ffffff;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.03em;
     line-height: 1;
@@ -154,7 +155,7 @@ CSS = """
 .kpi-val.green { color: #34d399; }
 .kpi-desc {
     font-size: 0.7rem;
-    color: #1e2a3d;
+    color: #64748b;
     margin-top: 0.4rem;
     font-weight: 400;
 }
@@ -163,7 +164,7 @@ CSS = """
 .section-label {
     font-size: 0.65rem;
     font-weight: 600;
-    color: #1e2a3d;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 0.75rem;
@@ -178,11 +179,13 @@ CSS = """
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.25rem;
+    color: #e2e8f0;
 }
+.data-panel .panel-header { color: #94a3b8; }
 .panel-header {
     font-size: 0.65rem;
     font-weight: 600;
-    color: #334155;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     margin-bottom: 1rem;
@@ -206,8 +209,8 @@ CSS = """
 }
 .action-row:last-child { border-bottom: none; }
 .action-tier { min-width: 80px; }
-.action-desc { font-size: 0.8rem; color: #64748b; flex: 1; padding: 0 1rem; }
-.action-directive { font-size: 0.75rem; color: #334155; text-align: right; }
+.action-desc { font-size: 0.8rem; color: #e2e8f0; flex: 1; padding: 0 1rem; }
+.action-directive { font-size: 0.75rem; color: #94a3b8; text-align: right; }
 
 /* CTA block */
 .cta-block {
@@ -218,8 +221,8 @@ CSS = """
     padding: 1.75rem 2rem;
     margin-top: 2rem;
 }
-.cta-title { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
-.cta-sub { font-size: 0.825rem; color: #475569; line-height: 1.5; margin-bottom: 1rem; }
+.cta-title { font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+.cta-sub { font-size: 0.825rem; color: #e2e8f0; line-height: 1.5; margin-bottom: 1rem; }
 .cta-link { font-size: 0.8rem; font-weight: 600; color: #60a5fa; letter-spacing: 0.02em; text-decoration: none; }
 
 /* Feature grid */
@@ -247,7 +250,7 @@ CSS = """
 }
 .feat-item {
     font-size: 0.72rem;
-    color: #334155;
+    color: #94a3b8;
     padding: 0.2rem 0;
     font-family: 'SF Mono', 'Fira Code', monospace;
     letter-spacing: 0.01em;
@@ -256,7 +259,7 @@ CSS = """
 /* Buttons */
 .stButton > button {
     background: #090c14 !important;
-    color: #64748b !important;
+    color: #e2e8f0 !important;
     border: 1px solid #0f1623 !important;
     border-radius: 4px !important;
     font-size: 0.75rem !important;
@@ -277,9 +280,9 @@ CSS = """
     background: #06080d !important;
     border-right: 1px solid #0f1623 !important;
 }
-[data-testid="stSidebar"] label { color: #334155 !important; font-size: 0.72rem !important; }
-[data-testid="stSidebar"] p { color: #334155 !important; font-size: 0.72rem !important; }
-[data-testid="stSidebar"] h3 { color: #475569 !important; font-size: 0.7rem !important; }
+[data-testid="stSidebar"] label { color: #e2e8f0 !important; font-size: 0.72rem !important; }
+[data-testid="stSidebar"] p { color: #94a3b8 !important; font-size: 0.72rem !important; }
+[data-testid="stSidebar"] h3 { color: #e2e8f0 !important; font-size: 0.7rem !important; }
 
 /* Tabs */
 [data-baseweb="tab-list"] {
@@ -299,20 +302,22 @@ CSS = """
     border-bottom: 2px solid transparent !important;
     margin-bottom: -1px !important;
 }
+[aria-selected="false"][data-baseweb="tab"] { color: #94a3b8 !important; }
 [aria-selected="true"][data-baseweb="tab"] {
-    color: #e2e8f0 !important;
+    color: #ffffff !important;
     border-bottom-color: #3b82f6 !important;
     background: transparent !important;
 }
 [data-testid="stTabsContent"] { padding-top: 2rem; }
 
 /* Metrics override */
-[data-testid="stMetricValue"] { color: #f1f5f9 !important; }
-[data-testid="stMetricLabel"] { color: #334155 !important; font-size: 0.65rem !important; text-transform: uppercase; letter-spacing: 0.08em; }
+[data-testid="stMetricValue"] { color: #ffffff !important; }
+[data-testid="stMetricLabel"] { color: #94a3b8 !important; font-size: 0.65rem !important; text-transform: uppercase; letter-spacing: 0.08em; }
 
 /* Dataframe */
 [data-testid="stDataFrame"] { border: 1px solid #0f1623; border-radius: 6px; }
-.stDataFrame th { background: #090c14 !important; color: #334155 !important; font-size: 0.65rem !important; text-transform: uppercase; letter-spacing: 0.06em; }
+.stDataFrame th { background: #090c14 !important; color: #94a3b8 !important; font-size: 0.65rem !important; text-transform: uppercase; letter-spacing: 0.06em; }
+.stDataFrame td { color: #ffffff !important; }
 
 hr { border-color: #0f1623 !important; margin: 1.5rem 0 !important; }
 [data-testid="stExpander"] { background: #090c14 !important; border: 1px solid #0f1623 !important; border-radius: 6px !important; }
@@ -323,8 +328,8 @@ hr { border-color: #0f1623 !important; margin: 1.5rem 0 !important; }
 # Chart theme constants
 CHART_BG = "rgba(0,0,0,0)"
 CHART_GRID = "#0f1623"
-CHART_TEXT = "#334155"
-CHART_TICK = "#1e2a3d"
+CHART_TEXT = "#94a3b8"
+CHART_TICK = "#64748b"
 CHART_FONT = dict(family="Inter, sans-serif", color=CHART_TEXT, size=11)
 COLOR_SCALE = [[0, "#10b981"], [0.45, "#f59e0b"], [0.7, "#ef4444"], [1, "#dc2626"]]
 BLUE = "#3b82f6"
@@ -654,7 +659,7 @@ with tab2:
             margin=dict(t=32, b=32, l=8, r=24),
         )
     )
-    fig_corr.update_yaxes(tickfont=dict(family="SF Mono, Fira Code, monospace", size=10, color="#334155"))
+    fig_corr.update_yaxes(tickfont=dict(family="SF Mono, Fira Code, monospace", size=10, color="#94a3b8"))
     st.plotly_chart(fig_corr, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("""
@@ -833,7 +838,7 @@ with tab3:
             hole=0.65,
             marker=dict(colors=tier_colors, line=dict(color="#06080d", width=2)),
             textinfo="label+percent",
-            textfont=dict(color="#475569", size=10),
+            textfont=dict(color="#94a3b8", size=10),
             hovertemplate="%{label}: %{value} (%{percent})<extra></extra>",
         ))
         fig_donut.update_layout(
@@ -922,15 +927,15 @@ with tab4:
         <div class="data-panel" style="margin-top:0">
           <div class="panel-header">Exposure summary</div>
           <div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #0f1623">
-            <span style="font-size:0.75rem;color:#334155">Above threshold</span>
-            <span style="font-size:0.8rem;font-weight:600;color:#f1f5f9;font-variant-numeric:tabular-nums">{n_flagged}</span>
+            <span style="font-size:0.75rem;color:#94a3b8">Above threshold</span>
+            <span style="font-size:0.8rem;font-weight:600;color:#ffffff;font-variant-numeric:tabular-nums">{n_flagged}</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #0f1623">
-            <span style="font-size:0.75rem;color:#334155">HIGH tier</span>
+            <span style="font-size:0.75rem;color:#94a3b8">HIGH tier</span>
             <span style="font-size:0.8rem;font-weight:600;color:#f87171;font-variant-numeric:tabular-nums">{n_high}</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:0.4rem 0">
-            <span style="font-size:0.75rem;color:#334155">ELEVATED tier</span>
+            <span style="font-size:0.75rem;color:#94a3b8">ELEVATED tier</span>
             <span style="font-size:0.8rem;font-weight:600;color:#fbbf24;font-variant-numeric:tabular-nums">{n_elevated}</span>
           </div>
         </div>
@@ -974,7 +979,7 @@ with tab4:
         st.markdown(f"""
         <div class="data-panel" style="margin-top:1rem">
           <div class="panel-header">Operational guidance &mdash; current scenario</div>
-          <div style="font-size:0.825rem;color:#64748b;line-height:1.65">{guidance}</div>
+          <div style="font-size:0.825rem;color:#e2e8f0;line-height:1.65">{guidance}</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -994,7 +999,7 @@ with tab4:
 # Footer
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown(
-    '<p style="font-size:0.62rem;color:#1e2a3d;letter-spacing:0.08em;text-transform:uppercase;">'
+    '<p style="font-size:0.62rem;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;">'
     'Synthetic demo data &nbsp;&middot;&nbsp; Advisory only &nbsp;&middot;&nbsp; '
     'Full audit trail &nbsp;&middot;&nbsp; Savvy Bee Ltd &nbsp;&middot;&nbsp; '
     'Transaction Risk Intelligence</p>',
