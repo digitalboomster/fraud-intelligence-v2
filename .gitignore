@@ -1,0 +1,28 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Next.js
+.next
+out
+
+# Build / tooling
+dist
+coverage
+*.tsbuildinfo
+
+# Env & secrets
+.env
+.env*.local
+
+# Logs & OS
+*.log
+.DS_Store
+
+# Python (legacy / local)
+__pycache__/
+*.py[cod]
+*.pkl
+.venv
+venv/

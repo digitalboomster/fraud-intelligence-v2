@@ -1,51 +1,61 @@
-# Savvy Bee — Fraud Detection Demo
+# Savvy Fraud Intelligence
 
-Transaction fraud intelligence for businesses. Advisory only, fully explainable. Part of the Savvy Bee ecosystem.
+Dark intelligence operations interface for fraud monitoring, alert triage, case investigation, entity review, and regulatory reporting.
 
-## Overview
+This repo now runs as a Vercel-native `Next.js + TypeScript` frontend. The previous Streamlit prototype and Python model artifacts have been removed.
 
-This demo shows how Savvy Bee turns transaction data into risk scores and flags — no money movement, no black boxes. It follows the same step-by-step flow as [Savvy Intelligence](https://savvy-intelligence-2.vercel.app/).
+## Screens
 
-### Flow
+- `Dashboard / Command Centre`
+- `Alert Queue`
+- `Case Manager`
+- `Entity Search`
+- `Reporting`
+- `Audit Logs`
 
-1. **The data** — Sample transaction records (sender, receiver, amount, timing, risk features)
-2. **Getting it ready** — Feature preparation (model expects 28 features)
-3. **What we find** — Risk scores, distribution, flagged transactions
-4. **What to do next** — Action guidance and Request Demo CTA
+## Design Direction
 
-### Scenarios
+The UI follows the `Sovereign Analyst` direction:
 
-- **Random** — Mixed risk profile
-- **Low risk** — Transactions with risk score &lt; 30%
-- **Elevated** — Transactions with 30–70% risk
-- **High risk** — Transactions with ≥ 70% risk
-
-### Model
-
-- Trained on Nigerian financial transactions dataset
-- XGBoost classifier
-- Features: velocity, device/IP sharing, amount, timing, behavioural signals
+- dark tonal surfaces
+- architectural layout instead of dashboard-template grids
+- Public Sans typography
+- lavender-blue operational accent
+- isolated pink-red risk signaling
+- left rail plus centered command bar
+- dossier-style intelligence modules
 
 ## Run locally
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+npm install
+npm run dev
 ```
 
-## Deploy
+Open `http://localhost:3000`.
 
-- **Streamlit Cloud** — Connect this repo and deploy
-- **Docker** — Add a `Dockerfile` if needed
+## Production (Vercel)
 
-## Request Demo
+1. Import this repo in the [Vercel dashboard](https://vercel.com/new).
+2. Framework preset: **Next.js** (default).
+3. Build command: `npm run build` · Output: Next.js default (no static `out/` unless you enable `output: "export"`).
 
-The demo ends with a CTA to request a full demo. Update the link in `app.py` (search for `Request Demo`) to point to your request-demo page.
+### Verify locally before deploy
 
-## Part of Savvy Bee
+```bash
+npm run lint
+npm run build
+npm run start
+```
 
-- **Savvy Bee One** — personal finance
-- **SABI** — wealth intelligence
-- **Khalia** — community finance
-- **Savvy Intelligence** — readiness, stress, anomaly (business intelligence)
-- **Fraud Detection Demo** — transaction fraud (this project)
+Open `http://localhost:3000` and confirm production mode.
+
+## Design References
+
+- `STITCH_MOCKUP_PROMPTS.md`
+- External design spec: keep your `DESIGN.md` alongside the project or in team docs (do not commit machine-specific paths).
+
+## Notes
+
+- The current implementation is a frontend prototype with curated mock intelligence data.
+- It is structured to support replacement with live API-backed data later.
