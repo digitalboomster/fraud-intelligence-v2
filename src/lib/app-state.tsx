@@ -118,7 +118,7 @@ type AppContextValue = {
   createInvestigation: (input: NewInvestigationInput) => string;
 };
 
-const STORAGE_KEY = "savvy-fraud-intelligence-state-v3-ng";
+const STORAGE_KEY = "savvy-fraud-intelligence-state-v5-product-review";
 
 const initialState: AppState = {
   alerts: initialAlerts,
@@ -191,10 +191,18 @@ function mergeEntities(base: EntityRecord[], persisted: EntityRecord[]) {
     if (!saved) {
       return seed;
     }
+    const savedById = new Map(saved.interventions.map((item) => [item.id, item]));
     return {
       ...seed,
       frozen: saved.frozen,
-      interventions: saved.interventions,
+      interventions: seed.interventions.map((item) => {
+        const persistedIv = savedById.get(item.id);
+        return {
+          ...item,
+          completed: persistedIv?.completed ?? item.completed,
+          tier: item.tier,
+        };
+      }),
     };
   });
   return [...userCreated, ...mergedSeeds];
@@ -697,21 +705,33 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const amount = formatNgnAmount(input.amountNgn);
         const now = nowStamp();
 
+        const conf = Math.min(97, Math.max(70, risk + 4));
         const entity: EntityRecord = {
           id: entityId,
           breadcrumb: `Entities  >  ${entityId}`,
           name: input.entityName,
           tags: ["New Investigation", "CBN Watch", input.region],
           riskIndex: risk,
-          riskTitle: risk >= 92 ? "Immediate Review" : "Elevated Exposure",
-          riskTier: risk >= 92 ? "Tier 4 Critical" : "Tier 3 Elevated",
+          riskTitle: risk >= 92 ? "Immediate review" : "High exposure",
+          riskTier: risk >= 92 ? "Critical" : "High",
           riskNarrative: input.narrative,
           frozen: false,
+          confidencePct: conf,
+          fraudScenario: "New intake — pattern classification pending rules engine.",
+          recommendedAction: "Complete device and beneficiary checks; apply threshold hold if amount exceeds policy.",
+          riskTrend: "Stable",
+          behavioralContext: {
+            amountVs30dAvg: "No 30-day baseline yet — first observation window.",
+            amountVs90dAvg: "No 90-day baseline yet.",
+            frequencyVsBaseline: "Single reported event at intake.",
+            deviceVsBaseline: "Device telemetry collection in progress.",
+            locationVsBaseline: `Session geography: ${input.region}.`,
+          },
           factorCards: [
             { label: "Velocity", value: "High" },
-            { label: "Geolocation", value: "Monitored" },
-            { label: "Network ID", value: "Pending" },
-            { label: "Identity Match", value: "Pending" },
+            { label: "Location risk", value: "Medium" },
+            { label: "Network risk", value: "Medium" },
+            { label: "Identity match", value: "Pending" },
           ],
           financialSnapshot: [
             { label: "Total assets", value: amount },
@@ -722,7 +742,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           fingerprint: {
             device: ["Device collection pending", "Baseline to be established"],
             network: ["Initial review started", "IP reputation pending"],
-            identity: ["KYC refresh required", "Sanctions screening queued"],
+            identity: ["KYC refresh required", "NIN/BVN verification queued"],
           },
           identityTrust: [
             { label: "Facial Match", status: "Pending review" },
@@ -732,10 +752,39 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           timeline: [
             { id: `EV-${suffix}A`, timestamp: now, action: "Investigation Intake", amount, signal: input.signal },
           ],
-          associated: [{ id: `AE-${suffix}A`, name: input.entityName, meta: "Primary account holder", risk: "H-Risk" }],
+          associated: [
+            {
+              id: `AE-${suffix}A`,
+              name: input.entityName,
+              meta: "Primary account holder — from intake registration",
+              risk: "High",
+            },
+          ],
           interventions: [
-            { id: `IN-${suffix}A`, label: "Request KYC refresh and source-of-funds documentation.", completed: false },
-            { id: `IN-${suffix}B`, label: "Place temporary threshold on outbound debits until review closes.", completed: false },
+            {
+              id: `IN-${suffix}A`,
+              label: "Outbound call to customer — verify initiated transfer.",
+              completed: false,
+              tier: "immediate",
+            },
+            {
+              id: `IN-${suffix}B`,
+              label: "Temporary outbound debit threshold until review closes.",
+              completed: false,
+              tier: "immediate",
+            },
+            {
+              id: `IN-${suffix}C`,
+              label: "Internal escalation to fraud desk lead.",
+              completed: false,
+              tier: "immediate",
+            },
+            {
+              id: `IN-${suffix}D`,
+              label: "Source-of-funds documentation if compliance confirms fraud typology.",
+              completed: false,
+              tier: "compliance",
+            },
           ],
         };
 
@@ -752,13 +801,33 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           amount,
           currency: "NGN",
           method: `${input.channel} transfer`,
-          destination: input.region,
+          paymentRail: input.channel === "Card" ? "Card scheme" : input.channel === "Transfer" ? "NIP" : "Mobile / digital rail",
+          destinationGeography: input.region,
+          confidencePct: conf,
+          fraudScenario: "Manual intake — investigate beneficiary and device telemetry before release.",
+          recommendedAction: "Hold pending verification; assign analyst within SLA.",
+          riskTrend: "Stable",
+          behavioralContext: {
+            amountVs30dAvg: "Baseline pending — first intake observation.",
+            amountVs90dAvg: "Baseline pending.",
+            frequencyVsBaseline: "Single event at intake.",
+            deviceVsBaseline: "Collection in progress.",
+            locationVsBaseline: input.region,
+          },
           status: "Open / High",
           decision: "Pending",
           linkedAlertId: alertId,
           entityId,
           auditTrail: [
             { id: `CA-${suffix}A`, title: "Case created", body: "Investigation initialized from intake form.", time: now },
+          ],
+          transactionAuditEvents: [
+            {
+              id: `TX-${suffix}0`,
+              title: "Intake logged",
+              body: `Signal: ${input.signal} · Amount ${amount}`,
+              time: now,
+            },
           ],
           evidence: [
             { label: "Intake Narrative", value: input.narrative },
@@ -767,9 +836,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
             { label: "Signal", value: input.signal },
           ],
           riskFactors: [
-            { label: "Manual Intake Trigger", points: "+20 pts" },
-            { label: "Value Threshold", points: `+${Math.round(risk / 2)} pts` },
-            { label: "Signal Match", points: "+18 pts" },
+            { label: "Manual Intake Trigger", points: "+20 pts", contribution: 20 },
+            { label: "Value Threshold", points: `+${Math.round(risk / 2)} pts`, contribution: Math.round(risk / 2) },
+            { label: "Signal Match", points: "+18 pts", contribution: 18 },
           ],
           aggregatedRisk: risk,
           entityProfile: {
@@ -796,6 +865,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           entityId,
           caseId,
           region: input.region,
+          confidencePct: conf,
         };
 
         dispatch({

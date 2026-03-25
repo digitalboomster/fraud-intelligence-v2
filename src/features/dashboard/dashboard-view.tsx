@@ -251,6 +251,9 @@ export function DashboardView() {
               </div>
             </div>
           </div>
+          <p className="signalChartFootnote muted">
+            Bars show weighted signal contributions for this slice; values are not required to sum to 100%.
+          </p>
           <div className="footSplit">
             <div>
               <span className="eyebrow">Primary Threat Vector</span>

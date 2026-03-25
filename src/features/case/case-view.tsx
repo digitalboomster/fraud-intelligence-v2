@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { CaseDecision } from "@/lib/mock-data";
+import type { CaseDecision, CaseRiskFactor } from "@/lib/mock-data";
 import { useAppState } from "@/lib/app-state";
 import { IconSymbol } from "@/components/icon-symbol";
 import { WorkflowSheet } from "@/components/workflow-sheet";
@@ -38,6 +38,19 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
     }
     return state.cases.find((item) => item.id === caseId) ?? null;
   }, [caseId, state.cases]);
+
+  const sortedRiskFactors = useMemo(() => {
+    return [...(activeCase?.riskFactors ?? [])].sort(
+      (a: CaseRiskFactor, b: CaseRiskFactor) => b.contribution - a.contribution,
+    );
+  }, [activeCase]);
+
+  const openCasesForEntity = useMemo(() => {
+    if (!activeCase) {
+      return 0;
+    }
+    return state.cases.filter((c) => c.entityId === activeCase.entityId && c.decision === "Pending").length;
+  }, [activeCase, state.cases]);
 
   const openDecision = (decision: CaseDecision) => {
     setPendingDecision(decision);
@@ -195,6 +208,49 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
 
       {workspaceTab === "overview" ? (
         <>
+          <section className="panel tier1Summary">
+            <div className="splitTop">
+              <div className="moduleTitle">Analyst summary</div>
+              <span className="chip chipNeutral">Tier 1 — decision-first</span>
+            </div>
+            <div className="tier1SummaryGrid">
+              <div>
+                <span className="eyebrow">Risk level</span>
+                <strong className="tabular">{activeCase.aggregatedRisk}/100</strong>
+                <div className="muted">Trend: {activeCase.riskTrend}</div>
+              </div>
+              <div>
+                <span className="eyebrow">Model confidence</span>
+                <strong className="tabular">{activeCase.confidencePct}%</strong>
+              </div>
+              <div className="tier1SummaryWide">
+                <span className="eyebrow">Likely scenario</span>
+                <div>{activeCase.fraudScenario}</div>
+              </div>
+              <div className="tier1SummaryWide">
+                <span className="eyebrow">Recommended action</span>
+                <div>{activeCase.recommendedAction}</div>
+              </div>
+              <div className="tier1SummaryWide">
+                <span className="eyebrow">Entity context</span>
+                <div className="muted">
+                  {openCasesForEntity} open case(s) for this entity ·{" "}
+                  <button
+                    type="button"
+                    className="textButton"
+                    onClick={() =>
+                      router.push(
+                        `/entity/${activeCase.entityId}?fromCase=${activeCase.id}${from ? `&returnFrom=${from}` : ""}`,
+                      )
+                    }
+                  >
+                    Open dossier
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section className="panel summaryStrip">
             <div>
               <span className="eyebrow">Transaction Amount</span>
@@ -206,8 +262,12 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
               <strong>{activeCase.method}</strong>
             </div>
             <div>
-              <span className="eyebrow">Destination Rail</span>
-              <strong>{activeCase.destination}</strong>
+              <span className="eyebrow">Payment rail</span>
+              <strong>{activeCase.paymentRail}</strong>
+            </div>
+            <div>
+              <span className="eyebrow">Destination geography</span>
+              <strong>{activeCase.destinationGeography}</strong>
             </div>
             <div>
               <span className="eyebrow">Current Status</span>
@@ -239,14 +299,54 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
             </button>
           </section>
 
+          <section className="panel behavioralPanel">
+            <div className="moduleTitle" style={{ marginBottom: 12 }}>
+              Behavioral context vs baseline
+            </div>
+            <div className="infoList">
+              <div className="infoRow">
+                <span>Amount vs 30-day average</span>
+                <strong>{activeCase.behavioralContext.amountVs30dAvg}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Amount vs 90-day average</span>
+                <strong>{activeCase.behavioralContext.amountVs90dAvg}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Frequency vs baseline</span>
+                <strong>{activeCase.behavioralContext.frequencyVsBaseline}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Device vs registered</span>
+                <strong>{activeCase.behavioralContext.deviceVsBaseline}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Location vs typical</span>
+                <strong>{activeCase.behavioralContext.locationVsBaseline}</strong>
+              </div>
+            </div>
+          </section>
+
           <div className="caseGrid">
             <div className="stack">
               <section className="panel">
                 <div className="splitTop">
-                  <div className="moduleTitle">Audit Trail</div>
-                  <div className="muted">{activeCase.auditTrail.length} entries in latest review window</div>
+                  <div className="moduleTitle">Transaction & case timeline</div>
+                  <div className="muted">
+                    {activeCase.transactionAuditEvents.length} txn events · {activeCase.auditTrail.length} case notes
+                  </div>
                 </div>
                 <div className="timelineList">
+                  {activeCase.transactionAuditEvents.map((item) => (
+                    <div className="reviewRow reviewRowAudit" key={item.id}>
+                      <span className="timelineMarker" />
+                      <div>
+                        <strong>{item.title}</strong>
+                        <div className="heroSubtitle">{item.body}</div>
+                      </div>
+                      <div className="muted">{item.time}</div>
+                    </div>
+                  ))}
                   {activeCase.auditTrail.map((item) => (
                     <div className="reviewRow reviewRowAudit" key={item.id}>
                       <span className="timelineMarker" />
@@ -290,13 +390,22 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
                     System classification: <strong>Critical.</strong> Multiple high-confidence fraud indicators matched.
                   </div>
                 </div>
-                <div className="infoList" style={{ marginTop: 18 }}>
-                  {activeCase.riskFactors.map((item) => (
-                    <div className="infoRow" key={item.label}>
-                      <span>{item.label}</span>
+                <div className="moduleTitle" style={{ marginTop: 18, marginBottom: 8 }}>
+                  Key risk drivers (by contribution)
+                </div>
+                <div className="infoList">
+                  {sortedRiskFactors.map((item, index) => (
+                    <div className={`infoRow${index === 0 ? " riskDriverTop" : ""}`} key={item.label}>
+                      <span>
+                        {index === 0 ? "Top driver — " : ""}
+                        {item.label}
+                      </span>
                       <strong style={{ color: "var(--risk)" }}>{item.points}</strong>
                     </div>
                   ))}
+                </div>
+                <div className="heroSubtitle" style={{ marginTop: 12 }}>
+                  Model confidence <strong>{activeCase.confidencePct}%</strong> — aligned with entity dossier.
                 </div>
               </section>
 

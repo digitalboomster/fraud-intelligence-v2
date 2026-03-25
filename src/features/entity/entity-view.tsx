@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/app-state";
 import { RadialRiskVisual } from "@/components/data-visuals";
@@ -44,6 +44,7 @@ export function EntityView({
 }) {
   const router = useRouter();
   const { state, toggleEntityFrozen, toggleIntervention, logEntityDossierExport } = useAppState();
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const entity = useMemo(() => {
     if (!entityId) {
@@ -51,6 +52,31 @@ export function EntityView({
     }
     return state.entities.find((item) => item.id === entityId) ?? null;
   }, [entityId, state.entities]);
+
+  const openCasesForEntity = useMemo(() => {
+    if (!entity) {
+      return 0;
+    }
+    return state.cases.filter((c) => c.entityId === entity.id && c.decision === "Pending").length;
+  }, [entity, state.cases]);
+
+  const sanctionsPending = useMemo(() => {
+    if (!entity) {
+      return false;
+    }
+    return entity.identityTrust.some(
+      (row) =>
+        row.label === "Sanctions Screening" &&
+        (row.status.toLowerCase().includes("pending") || row.status.toLowerCase().includes("review")),
+    );
+  }, [entity]);
+
+  const showSanctionsHold =
+    entity &&
+    (entity.sanctionsHoldRequired || (sanctionsPending && entity.riskIndex >= 72));
+
+  const immediateInterventions = entity?.interventions.filter((i) => i.tier === "immediate") ?? [];
+  const complianceInterventions = entity?.interventions.filter((i) => i.tier === "compliance") ?? [];
 
   if (!entity) {
     return (
@@ -65,6 +91,19 @@ export function EntityView({
 
   return (
     <div className="stack pageStack">
+      {showSanctionsHold ? (
+        <section className="panel sanctionsHoldBanner" role="status">
+          <div className="splitTop">
+            <strong>Sanctions screening hold</strong>
+            <span className="chip chipRisk">Auto-restriction</span>
+          </div>
+          <p className="heroSubtitle" style={{ margin: "10px 0 0" }}>
+            Sanctions outcome is not cleared. Further payouts and new beneficiaries should remain blocked until
+            compliance completes screening or escalates with justification (H-07).
+          </p>
+        </section>
+      ) : null}
+
       <div className="dossierHead">
         <div>
           <div className="pageLabel">{entity.breadcrumb}</div>
@@ -108,6 +147,38 @@ export function EntityView({
         </div>
       </div>
 
+      <section className="panel tier1Summary">
+        <div className="splitTop">
+          <div className="moduleTitle">Analyst summary</div>
+          <span className="chip chipNeutral">Tier 1 — decision-first</span>
+        </div>
+        <div className="tier1SummaryGrid">
+          <div>
+            <span className="eyebrow">Risk level</span>
+            <strong>{entity.riskTier}</strong>
+            <div className="muted">Index {entity.riskIndex}/100 · Trend: {entity.riskTrend}</div>
+          </div>
+          <div>
+            <span className="eyebrow">Model confidence</span>
+            <strong className="tabular">{entity.confidencePct}%</strong>
+          </div>
+          <div className="tier1SummaryWide">
+            <span className="eyebrow">Likely scenario</span>
+            <div>{entity.fraudScenario}</div>
+          </div>
+          <div className="tier1SummaryWide">
+            <span className="eyebrow">Recommended action</span>
+            <div>{entity.recommendedAction}</div>
+          </div>
+          <div className="tier1SummaryWide">
+            <span className="eyebrow">Investigations</span>
+            <div className="muted">
+              {entity.investigationsPending} · {openCasesForEntity} open case(s) on file for this entity
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="entityGrid">
         <div className="stack">
           <section className="panel">
@@ -123,6 +194,9 @@ export function EntityView({
                 <div className="heroSubtitle">{entity.riskNarrative}</div>
               </div>
             </div>
+            <div className="moduleTitle" style={{ marginTop: 20, marginBottom: 10 }}>
+              Key risk signals (Tier 2)
+            </div>
             <div className="statCards">
               {entity.factorCards.map((factor) => (
                 <div className="statCard" key={factor.label}>
@@ -133,53 +207,90 @@ export function EntityView({
             </div>
           </section>
 
-          <section className="gridTwo">
-            <div className="panel">
-              <div className="moduleTitle" style={{ marginBottom: 16 }}>
-                Behavioral Risk Fingerprint
-              </div>
-              <div className="footSplit">
-                <div>
-                  <span className="eyebrow">Device Profiling</span>
-                  <div className="infoList">
-                    {entity.fingerprint.device.map((item) => (
-                      <div key={item}>{item}</div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <span className="eyebrow">Network Logic</span>
-                  <div className="infoList">
-                    {entity.fingerprint.network.map((item) => (
-                      <div key={item}>{item}</div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div style={{ marginTop: 20 }}>
-                <span className="eyebrow">Identity Auth</span>
-                <div className="infoList">
-                  {entity.fingerprint.identity.map((item) => (
-                    <div key={item}>{item}</div>
-                  ))}
-                </div>
-              </div>
+          <section className="panel behavioralPanel">
+            <div className="moduleTitle" style={{ marginBottom: 12 }}>
+              Behavioral context vs baseline
             </div>
-
-            <div className="panel">
-              <div className="moduleTitle" style={{ marginBottom: 16 }}>
-                Identity Trust (KYC)
+            <div className="infoList">
+              <div className="infoRow">
+                <span>Amount vs 30-day average</span>
+                <strong>{entity.behavioralContext.amountVs30dAvg}</strong>
               </div>
-              <div className="infoList">
-                {entity.identityTrust.map((item) => (
-                  <div className="infoRow" key={item.label}>
-                    <span>{item.label}</span>
-                    <strong>{item.status}</strong>
-                  </div>
-                ))}
+              <div className="infoRow">
+                <span>Amount vs 90-day average</span>
+                <strong>{entity.behavioralContext.amountVs90dAvg}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Frequency vs baseline</span>
+                <strong>{entity.behavioralContext.frequencyVsBaseline}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Device vs registered</span>
+                <strong>{entity.behavioralContext.deviceVsBaseline}</strong>
+              </div>
+              <div className="infoRow">
+                <span>Location vs typical</span>
+                <strong>{entity.behavioralContext.locationVsBaseline}</strong>
               </div>
             </div>
           </section>
+
+          <div className="collapsibleBlock">
+            <button type="button" className="collapsibleToggle" onClick={() => setDetailOpen((v) => !v)}>
+              <span>{detailOpen ? "▼" : "▶"}</span>
+              <span>Supporting technical detail (Tier 3)</span>
+              <span className="muted">Device, network, identity checks</span>
+            </button>
+            {detailOpen ? (
+              <section className="gridTwo" style={{ marginTop: 14 }}>
+                <div className="panel">
+                  <div className="moduleTitle" style={{ marginBottom: 16 }}>
+                    Behavioral Risk Fingerprint
+                  </div>
+                  <div className="footSplit">
+                    <div>
+                      <span className="eyebrow">Device Profiling</span>
+                      <div className="infoList">
+                        {entity.fingerprint.device.map((item) => (
+                          <div key={item}>{item}</div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="eyebrow">Network Logic</span>
+                      <div className="infoList">
+                        {entity.fingerprint.network.map((item) => (
+                          <div key={item}>{item}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 20 }}>
+                    <span className="eyebrow">Identity Auth</span>
+                    <div className="infoList">
+                      {entity.fingerprint.identity.map((item) => (
+                        <div key={item}>{item}</div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="panel">
+                  <div className="moduleTitle" style={{ marginBottom: 16 }}>
+                    Identity Trust (KYC)
+                  </div>
+                  <div className="infoList">
+                    {entity.identityTrust.map((item) => (
+                      <div className="infoRow" key={item.label}>
+                        <span>{item.label}</span>
+                        <strong>{item.status}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+          </div>
 
           <section className="panel">
             <div className="splitTop">
@@ -232,7 +343,7 @@ export function EntityView({
                       {item.meta}
                     </div>
                     <div style={{ marginTop: 8 }} className="chip chipPrimary">
-                      {item.risk}
+                      Risk: {item.risk}
                     </div>
                     {linked ? (
                       <button
@@ -251,11 +362,27 @@ export function EntityView({
           </section>
 
           <section className="panelRaised">
-            <div className="moduleTitle" style={{ marginBottom: 16 }}>
-              Suggested Interventions
+            <div className="moduleTitle" style={{ marginBottom: 12 }}>
+              Interventions — immediate
             </div>
             <div className="infoList">
-              {entity.interventions.map((item) => (
+              {immediateInterventions.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`interventionItem${item.completed ? " completed" : ""}`}
+                  onClick={() => toggleIntervention(entity.id, item.id)}
+                >
+                  <span className="interventionCheck">{item.completed ? "✓" : "○"}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="moduleTitle" style={{ margin: "18px 0 12px" }}>
+              Secondary — compliance
+            </div>
+            <div className="infoList">
+              {complianceInterventions.map((item) => (
                 <button
                   key={item.id}
                   type="button"

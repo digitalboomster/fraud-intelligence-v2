@@ -62,6 +62,9 @@ export function AlertsView({ focusId }: { focusId?: string }) {
           <div className="pageLabel">Operational Queue</div>
           <h1>Live Alert Queue</h1>
           <div className="pageSub">{alertsMeta.subtitle}</div>
+          <div className="muted" style={{ marginTop: 8 }}>
+            Platform total: {state.alerts.length} alerts · This view: {filteredAlerts.length} match active filters
+          </div>
         </div>
         <div className="actionsRow">
           <button
@@ -74,7 +77,17 @@ export function AlertsView({ focusId }: { focusId?: string }) {
           >
             Export CSV
           </button>
-          <button type="button" className="primaryBtn" onClick={runBatchAction}>
+          <button
+            type="button"
+            className="primaryBtn"
+            disabled={state.selectedAlertIds.length === 0}
+            title={
+              state.selectedAlertIds.length === 0
+                ? "Select one or more alerts to run a batch action"
+                : undefined
+            }
+            onClick={runBatchAction}
+          >
             Batch Action ({state.selectedAlertIds.length})
           </button>
         </div>
@@ -127,6 +140,7 @@ export function AlertsView({ focusId }: { focusId?: string }) {
             <span>Customer</span>
             <span>Amount</span>
             <span>Risk</span>
+            <span>Conf.</span>
             <span>Signal</span>
           </div>
           {pagedAlerts.map((row) => {
@@ -162,6 +176,9 @@ export function AlertsView({ focusId }: { focusId?: string }) {
                   <div className="riskBar">
                     <span style={{ width: `${row.risk}%` }} />
                   </div>
+                </div>
+                <div className="tabular muted" style={{ fontSize: 12 }}>
+                  {row.confidencePct}%
                 </div>
                 <div className="alertSignalGroup">
                   <span className={`chip ${row.severity === "Critical" ? "chipRisk" : "chipPrimary"}`}>
@@ -241,12 +258,15 @@ export function AlertsView({ focusId }: { focusId?: string }) {
               {alertsMeta.triageTime}
             </div>
             <div className="personList">
-              {alertsMeta.team.map((person) => (
-                <div className="personRow" key={person.name}>
-                  <span>{person.name}</span>
-                  <span>{person.count}</span>
-                </div>
-              ))}
+              {alertsMeta.team.map((person) => {
+                const isBreak = person.name === "Break" || person.count === "Break";
+                return (
+                  <div className={`personRow${isBreak ? " personRowOffShift" : ""}`} key={person.name}>
+                    <span>{person.name}</span>
+                    <span>{person.count}</span>
+                  </div>
+                );
+              })}
             </div>
           </section>
 

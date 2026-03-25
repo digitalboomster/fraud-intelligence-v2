@@ -80,9 +80,38 @@ export function AuditView() {
         <div className="auditFeed">
           {filtered.map((item) => (
             <div className="auditItem" key={item.id}>
-              <strong className="mono">{item.timestamp}</strong>
-              <span>{item.actor}</span>
-              <span>{item.detail}</span>
+              <div className="auditItemTop">
+                <strong className="mono">{item.timestamp}</strong>
+                <span>{item.actor}</span>
+              </div>
+              <div className="auditItemDetail">{item.detail}</div>
+              {item.beforeState || item.afterState ? (
+                <div className="auditStateDelta">
+                  {item.beforeState ? (
+                    <div>
+                      <span className="eyebrow">Before</span>
+                      <div>{item.beforeState}</div>
+                    </div>
+                  ) : null}
+                  {item.afterState ? (
+                    <div>
+                      <span className="eyebrow">After</span>
+                      <div>{item.afterState}</div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {item.justification ? (
+                <div className="auditJustification muted">
+                  <span className="eyebrow">Justification</span>
+                  <div>{item.justification}</div>
+                </div>
+              ) : null}
+              {item.sessionRef ? (
+                <div className="muted" style={{ fontSize: 12 }}>
+                  Session ref: <span className="mono">{item.sessionRef}</span>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
