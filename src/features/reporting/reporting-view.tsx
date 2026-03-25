@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { exportCards, reportingData } from "@/lib/mock-data";
+import { exportCards, reportingData, reportingPackDefaultPeriodLabel } from "@/lib/mock-data";
 import { useAppState } from "@/lib/app-state";
 import { IconSymbol } from "@/components/icon-symbol";
 import { RadialRiskVisual } from "@/components/data-visuals";
@@ -13,7 +13,7 @@ export function ReportingView() {
   const { state, generateReportPack, shareInternalDistribution, downloadArtifact } = useAppState();
   const [packOpen, setPackOpen] = useState(false);
   const [distOpen, setDistOpen] = useState(false);
-  const [periodLabel, setPeriodLabel] = useState("Q1 2026");
+  const [periodLabel, setPeriodLabel] = useState(reportingPackDefaultPeriodLabel);
   const [framework, setFramework] = useState<string>(frameworkOptions[0]);
   const [packNarrative, setPackNarrative] = useState("");
   const [distNote, setDistNote] = useState("");
@@ -48,7 +48,11 @@ export function ReportingView() {
         </p>
         <label className="sheetField">
           <span>Reporting period</span>
-          <input value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} placeholder="e.g. Jan–Mar 2026" />
+          <input
+            value={periodLabel}
+            onChange={(e) => setPeriodLabel(e.target.value)}
+            placeholder="e.g. Q4 FY24 · Oct 2024"
+          />
         </label>
         <label className="sheetField">
           <span>Framework</span>

@@ -2,10 +2,64 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { CaseDecision, CaseRiskFactor } from "@/lib/mock-data";
+import type { CaseDecision, CaseRiskFactor, CaseRecord } from "@/lib/mock-data";
 import { useAppState } from "@/lib/app-state";
 import { IconSymbol } from "@/components/icon-symbol";
 import { WorkflowSheet } from "@/components/workflow-sheet";
+
+/** Sidebar classification: pending cases use score bands; closed cases reflect disposition. */
+function caseRiskSidebarClassification(caseRecord: CaseRecord): { label: string; narrative: string } {
+  const { aggregatedRisk, decision, status } = caseRecord;
+  if (decision === "Approved") {
+    return {
+      label: "Cleared",
+      narrative: "Case approved; score above reflects the model snapshot at the time of review.",
+    };
+  }
+  if (decision === "Rejected") {
+    return {
+      label: "Rejected",
+      narrative: "Case rejected / denied; historical risk score retained for audit trail.",
+    };
+  }
+  if (decision === "Escalated") {
+    return {
+      label: "Escalated",
+      narrative: "Forwarded to fusion or specialist queue; treat prior automated band as advisory only.",
+    };
+  }
+
+  const st = status.toLowerCase();
+  if (st.includes("cleared") || st.includes("false positive")) {
+    return {
+      label: "Disposition recorded",
+      narrative: "Workflow status indicates closure; verify latest notes before relying on automated classification.",
+    };
+  }
+
+  if (aggregatedRisk >= 92) {
+    return {
+      label: "Critical",
+      narrative: "Multiple high-confidence fraud indicators matched policy thresholds for immediate escalation.",
+    };
+  }
+  if (aggregatedRisk >= 72) {
+    return {
+      label: "High",
+      narrative: "Several risk drivers exceed baseline; complete Tier-1 checks before release or further escalation.",
+    };
+  }
+  if (aggregatedRisk >= 45) {
+    return {
+      label: "Medium",
+      narrative: "Signals are elevated relative to peer cohort; standard verification recommended.",
+    };
+  }
+  return {
+    label: "Low",
+    narrative: "Score sits within the normal operating band for this product; continue routine monitoring.",
+  };
+}
 
 function downloadEvidencePack(caseId: string, evidence: Array<{ label: string; value: string }>) {
   const blob = new Blob(
@@ -97,6 +151,8 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
       </div>
     );
   }
+
+  const riskSidebarCopy = caseRiskSidebarClassification(activeCase);
 
   const decisionTitle =
     pendingDecision === "Approved"
@@ -387,7 +443,7 @@ export function CaseView({ caseId, from }: { caseId?: string; from?: "alerts" | 
                     <span style={{ width: `${activeCase.aggregatedRisk}%` }} />
                   </div>
                   <div className="heroSubtitle">
-                    System classification: <strong>Critical.</strong> Multiple high-confidence fraud indicators matched.
+                    System classification: <strong>{riskSidebarCopy.label}.</strong> {riskSidebarCopy.narrative}
                   </div>
                 </div>
                 <div className="moduleTitle" style={{ marginTop: 18, marginBottom: 8 }}>

@@ -1012,6 +1012,9 @@ export const reportingData = {
   ],
 };
 
+/** Default period in “Generate regulator pack” — aligned to `reportingData.subtitle` (Q4 FY24). */
+export const reportingPackDefaultPeriodLabel = "Q4 FY24";
+
 export const initialSubmissions: ReportSubmission[] = [
   { id: "SAR-2024-0891-B", type: "Suspicious Activity", status: "Accepted", date: "Oct 12, 2024" },
   { id: "AML-MOD-772-V2", type: "Compliance Audit", status: "Pending", date: "Oct 14, 2024" },
